@@ -1,6 +1,10 @@
 # HTTP Server
 ## Todo List
--[x] Implement a simple echo server.
+- [x] Implement a simple echo server.
+- [ ] Support GET method.
+- [ ] Support POST method.
+- [ ] Support PUT method.
+- [ ] Support DELETE method.
 
 
 ## References
