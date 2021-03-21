@@ -108,6 +108,23 @@ void printRequest(HttpRequest &httpRequest) {
            httpRequest.header["Path"].c_str());
 }
 
+std::string getContentType(const std::string& path) {
+    auto type = std::string();
+    auto ext = getExtension(path);
+    if (ext == "html" || ext == "xml" || ext == "txt") {
+        type = "text/";
+    } else if (ext == "png" || ext == "jpeg" || ext == "gif") {
+        type = "image/";
+    } else if (ext == "pdf" || ext == "json") {
+        type = "application/";
+    } else {
+        type = "application/";
+        ext = "octet-stream";
+    }
+    type += ext;
+    return type;
+}
+
 // Process the request and return the response.
 char *httpController(char *reqBuffer) {
     auto req = HttpRequest(reqBuffer);
@@ -126,7 +143,7 @@ char *httpController(char *reqBuffer) {
         int size = 0;
         char *buffer = readFile(path, &size);
         if (size > 0) {
-            res.setContentType("");
+            res.setContentType(getContentType(path));
             res.setContent(buffer, size);
             delete[] buffer;
         }
