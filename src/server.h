@@ -2,18 +2,18 @@
 #define HTTP_SERVER_SERVER_H
 
 #include <thread>
-#include <iostream>
 #include "utils.h"
 #include "constants.h"
+#include "http.h"
 
 // Initialize the server socket and return the file descriptor.
 int initialize_server(u_short port) {
-    // Create a socket
+    // Create a socket.
     int server_fd; // fd means file descriptor
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) { // AF_INET: ipv4, SOCK_STREAM: TCP
         fatal("Unable to initialize the server socket.");
     }
-    // Bind a address to this socket
+    // Bind a address to this socket.
     struct sockaddr_in address{};
     memset((char *) &address, 0, sizeof(address));
     address.sin_family = AF_INET;
@@ -23,7 +23,7 @@ int initialize_server(u_short port) {
     if (bind(server_fd, (struct sockaddr *) &address, sizeof(address)) < 0) {
         fatal("Cannot bind address to socket");
     }
-    // Listen the incoming connection
+    // Listen the incoming connection.
     if (listen(server_fd, BACKLOG) < 0) {
         fatal("Unable to listen incoming connections.");
     }
@@ -32,12 +32,15 @@ int initialize_server(u_short port) {
 }
 
 int process_request(int socket_fd) {
-    std::cout << "[Log] Thread " << std::this_thread::get_id() << " at your service" << std::endl;
-    char buffer[READ_BUFFER_SIZE] = {0};
-    if (read(socket_fd, buffer, READ_BUFFER_SIZE) < 0) {
-        printf("nothing to read");
+    // TODO: is it good to initialize buffer here?
+    char reqBuffer[READ_BUFFER_SIZE] = {0};
+    char resBuffer[WRITE_BUFFER_SIZE] = {0};
+    if (read(socket_fd, reqBuffer, READ_BUFFER_SIZE) < 0) {
+        printf("Nothing to read.");
+        return -1;
     }
-    write(socket_fd, buffer, strlen(buffer));
+    httpController(reqBuffer, resBuffer);
+    write(socket_fd, resBuffer, strlen(resBuffer));
     close(socket_fd);
     return 0;
 }

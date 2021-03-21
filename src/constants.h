@@ -5,5 +5,6 @@ const int PORT = 3000;
 // The maximum number of pending connections
 const int BACKLOG = 5;
 const int READ_BUFFER_SIZE = 1024;
+const int WRITE_BUFFER_SIZE = 10240;
 
 #endif //HTTP_SERVER_CONSTANTS_H
