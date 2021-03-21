@@ -86,7 +86,7 @@ struct HttpResponse {
         contentType = type;
     }
 
-    char *toBuffer() const {
+    char *toBuffer(int *bufferSize) const {
         std::ostringstream stream;
         // Build header.
         stream << HTTP_VERSION << " " << statusText << "\n"
@@ -96,7 +96,8 @@ struct HttpResponse {
         auto header = stream.str();
         auto header_str = header.c_str();
         int headerLength = strlen(header_str);
-        char *buffer = new char[headerLength + contentLength];
+        *bufferSize = headerLength + contentLength;
+        char *buffer = new char[*bufferSize];
         memcpy(buffer, header_str, headerLength);
         memcpy(buffer + headerLength, content, contentLength);
         return buffer;
@@ -126,7 +127,7 @@ std::string getContentType(const std::string& path) {
 }
 
 // Process the request and return the response.
-char *httpController(char *reqBuffer) {
+char *httpController(char *reqBuffer, int* bufferSize) {
     auto req = HttpRequest(reqBuffer);
     auto res = HttpResponse();
     printRequest(req);
@@ -150,7 +151,7 @@ char *httpController(char *reqBuffer) {
     }
 
 
-    char *resBuffer = res.toBuffer();
+    char *resBuffer = res.toBuffer(bufferSize);
     return resBuffer;
 }
 

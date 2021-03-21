@@ -37,8 +37,9 @@ int process_request(int socket_fd) {
         printf("Nothing to read.");
         return -1;
     }
-    auto resBuffer = httpController(reqBuffer);
-    write(socket_fd, resBuffer, strlen(resBuffer));
+    int bufferSize;
+    auto resBuffer = httpController(reqBuffer, &bufferSize);
+    auto i = write(socket_fd, resBuffer, bufferSize);
     delete[] resBuffer;
     close(socket_fd);
     return 0;
