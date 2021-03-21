@@ -7,6 +7,7 @@
 #include <sstream>
 #include <vector>
 #include <map>
+#include "render.h"
 
 struct HttpRequest {
     std::map<std::string, std::string> header;
@@ -46,7 +47,7 @@ struct HttpResponse {
     std::string statusText;
     std::string contentType;
     int contentLength;
-    const char *content{};
+    char *content{};
 
     HttpResponse() {
         contentLength = 0;
@@ -54,8 +55,13 @@ struct HttpResponse {
         setStatus();
     }
 
+    ~HttpResponse() {
+        delete[] content;
+    }
+
     void setContent(const char *buffer, int bufferLength) {
-        content = buffer;
+        content = new char [bufferLength];
+        memcpy(content, buffer, bufferLength);
         contentLength = bufferLength;
     }
 
@@ -102,8 +108,25 @@ char *httpController(char *reqBuffer) {
     auto req = HttpRequest(reqBuffer);
     auto res = HttpResponse();
 
-    const char *resText = "<h2>Hi, This is a http server.</h2>";
-    res.setContent(resText, strlen(resText));
+    auto path = req.header["Path"];
+    if (path.empty()) {
+        path = "/";
+    }
+    if(isFolder(path)) {
+        auto files = listPath(path);
+        auto temp = renderList(path, files);
+        const char* resText = temp.c_str();
+        res.setContent(resText, strlen(resText));
+    } else {
+        int size = 0;
+        char* buffer = readFile(path, &size);
+        if(size > 0) {
+            res.setContentType("");
+            res.setContent(buffer, size);
+            delete[] buffer;
+        }
+    }
+
 
     char *resBuffer = res.toBuffer();
     return resBuffer;
