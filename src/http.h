@@ -60,7 +60,7 @@ struct HttpResponse {
     }
 
     void setContent(const char *buffer, int bufferLength) {
-        content = new char [bufferLength];
+        content = new char[bufferLength];
         memcpy(content, buffer, bufferLength);
         contentLength = bufferLength;
     }
@@ -103,24 +103,29 @@ struct HttpResponse {
     }
 };
 
+void printRequest(HttpRequest &httpRequest) {
+    printf("[%s] %s\n", httpRequest.header["Method"].c_str(),
+           httpRequest.header["Path"].c_str());
+}
+
 // Process the request and return the response.
 char *httpController(char *reqBuffer) {
     auto req = HttpRequest(reqBuffer);
     auto res = HttpResponse();
-
+    printRequest(req);
     auto path = req.header["Path"];
     if (path.empty()) {
         path = "/";
     }
-    if(isFolder(path)) {
+    if (isFolder(path)) {
         auto files = listPath(path);
         auto temp = renderList(path, files);
-        const char* resText = temp.c_str();
+        const char *resText = temp.c_str();
         res.setContent(resText, strlen(resText));
     } else {
         int size = 0;
-        char* buffer = readFile(path, &size);
-        if(size > 0) {
+        char *buffer = readFile(path, &size);
+        if (size > 0) {
             res.setContentType("");
             res.setContent(buffer, size);
             delete[] buffer;
@@ -131,5 +136,6 @@ char *httpController(char *reqBuffer) {
     char *resBuffer = res.toBuffer();
     return resBuffer;
 }
+
 
 #endif //HTTP_SERVER_HTTP_H

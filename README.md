@@ -1,18 +1,13 @@
-# HTTP Server
+# File Server
+## Description
+This is a simple file server built on socket.
+
 ## Todo List
-- [x] Implement a simple echo server.
-- [ ] Support GET method.
+- [x] Support GET method.
 - [ ] Support POST method.
 - [ ] Support PUT method.
 - [ ] Support DELETE method.
 
-## Test
-```shell
-curl http://localhost:3000/
-curl http://localhost:3000/hello/server
-curl -X POST -F 'username=song' -F 'password=PAssW0rd' http://localhost:3000/login
-curl -X POST -d 'username=song' -d 'password=PAssW0rd' http://localhost:3000/login
-```
 
 ## References
 1. [RFC 2616 (HTTP/1.1)](https://tools.ietf.org/html/rfc2616)
