@@ -34,13 +34,14 @@ int initialize_server(u_short port) {
 int process_request(int socket_fd) {
     // TODO: is it good to initialize buffer here?
     char reqBuffer[READ_BUFFER_SIZE] = {0};
-    char resBuffer[WRITE_BUFFER_SIZE] = {0};
     if (read(socket_fd, reqBuffer, READ_BUFFER_SIZE) < 0) {
         printf("Nothing to read.");
         return -1;
     }
-    httpController(reqBuffer, resBuffer);
+    auto resBuffer = httpController(reqBuffer);
     write(socket_fd, resBuffer, strlen(resBuffer));
+    // TODO: is this okay?
+    delete[] resBuffer;
     close(socket_fd);
     return 0;
 }

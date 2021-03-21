@@ -9,10 +9,9 @@
 #include <map>
 
 struct HttpRequest {
-    std::map<std::string, std::string> headerMap;
+    std::map<std::string, std::string> header;
 
     explicit HttpRequest(char *buffer) {
-        printf("%s", buffer);
         std::stringstream stream(buffer);
         std::vector<std::string> lines;
         std::string line;
@@ -28,13 +27,13 @@ struct HttpRequest {
             if (i == 0) {
                 auto firstSplitIndex = lines[i].find(' ');
                 auto secondSplitIndex = lines[i].find(' ', firstSplitIndex + 1);
-                headerMap["Method"] = lines[i].substr(0, firstSplitIndex);
-                headerMap["Path"] = lines[i].substr(firstSplitIndex + 1, secondSplitIndex - firstSplitIndex - 1);
-                headerMap["Protocol"] = lines[i].substr(secondSplitIndex + 1);
+                header["Method"] = lines[i].substr(0, firstSplitIndex);
+                header["Path"] = lines[i].substr(firstSplitIndex + 1, secondSplitIndex - firstSplitIndex - 1);
+                header["Protocol"] = lines[i].substr(secondSplitIndex + 1);
 
             } else {
                 auto splitIndex = lines[i].find(':');
-                headerMap[lines[i].substr(0, splitIndex)] = lines[i].substr(splitIndex + 2);
+                header[lines[i].substr(0, splitIndex)] = lines[i].substr(splitIndex + 2);
             }
         }
 
@@ -44,14 +43,70 @@ struct HttpRequest {
 };
 
 struct HttpResponse {
-    explicit HttpResponse(char *buffer) {
+    std::string statusText;
+    std::string contentType;
+    int contentLength;
+    const char *content{};
 
+    HttpResponse() {
+        contentLength = 0;
+        setContentType();
+        setStatus();
+    }
+
+    void setContent(const char *buffer, int bufferLength) {
+        content = buffer;
+        contentLength = bufferLength;
+    }
+
+    void setStatus(int status = 200) {
+        switch (status) {
+            case 200:
+                statusText = "200 OK";
+                break;
+            case 403:
+                statusText = "403 Forbidden";
+                break;
+            case 404:
+                statusText = "404 Not Found";
+                break;
+            default:
+                statusText = "500 Internal Server Error";
+        }
+
+    }
+
+    void setContentType(const std::string &type = "text/html") {
+        contentType = type;
+    }
+
+    char *toBuffer() const {
+        std::ostringstream stream;
+        // Build header.
+        stream << HTTP_VERSION << " " << statusText << "\n"
+               << "Server: " << SERVER_NAME << "\n"
+               << "Content-Type: " << contentType << "\n"
+               << "Content-Length: " << contentLength << "\n\n";
+        auto header = stream.str();
+        auto header_str = header.c_str();
+        int headerLength = strlen(header_str);
+        char *buffer = new char[headerLength + contentLength + 1];
+        memcpy(buffer, header_str, headerLength);
+        memcpy(buffer + headerLength, content, contentLength);
+        return buffer;
     }
 };
 
 // Process the request and return the response.
-void httpController(char *reqBuffer, char *resBuffer) {
-    auto req = new HttpRequest(reqBuffer);
+char *httpController(char *reqBuffer) {
+    auto req = HttpRequest(reqBuffer);
+    auto res = HttpResponse();
+
+    const char *resText = "<h2>Hi, This is a http server.</h2>";
+    res.setContent(resText, strlen(resText));
+
+    char *resBuffer = res.toBuffer();
+    return resBuffer;
 }
 
 #endif //HTTP_SERVER_HTTP_H
