@@ -90,7 +90,7 @@ struct HttpResponse {
         auto header = stream.str();
         auto header_str = header.c_str();
         int headerLength = strlen(header_str);
-        char *buffer = new char[headerLength + contentLength + 1];
+        char *buffer = new char[headerLength + contentLength];
         memcpy(buffer, header_str, headerLength);
         memcpy(buffer + headerLength, content, contentLength);
         return buffer;
